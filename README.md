@@ -1,4 +1,4 @@
-# NVIDIA Nemotron Fine-Tuning 
+# NVIDIA Nemotron Fine-Tuning using LoRA
 
 ## About this project
 
