@@ -46,7 +46,7 @@ model:
   pipeline_model_parallel_size: 1
   global_batch_size: 1
   micro_batch_size: 1
-  restore_from_path: /domino/edv/dgx-models/Nemotron-3-8B-Base-4k.nemo
+  restore_from_path: /mnt/artifacts/nemotron/Nemotron-3-8B-Base-4k.nemo
   resume_from_checkpoint: null
   save_nemo_on_validation_end: false
   sync_batch_comm: false
@@ -63,7 +63,7 @@ model:
   ffn_dropout: 0.0
   peft:
     peft_scheme: lora
-    restore_from_path: /domino/edv/dgx-models/Nemotron-3-8B-Base-4k.nemo
+    restore_from_path: /mnt/artifacts/nemotron/Nemotron-3-8B-Base-4k.nemo
     adapter_tuning:
       type: parallel_adapter
       adapter_dim: 32
@@ -97,7 +97,7 @@ model:
   data:
     train_ds:
       file_names:
-      - /mnt/data/SQuAD/squad_short_train.jsonl
+      - /mnt/code/data/SQuAD/squad_short_train.jsonl
       global_batch_size: ${model.global_batch_size}
       micro_batch_size: ${model.micro_batch_size}
       shuffle: true
@@ -119,7 +119,7 @@ model:
       truncation_method: right
     validation_ds:
       file_names:
-      - /mnt/data/SQuAD/squad_short_val.jsonl
+      - /mnt/code/data/SQuAD/squad_short_val.jsonl
       names:
       - squad_val
       global_batch_size: ${model.global_batch_size}
@@ -148,7 +148,7 @@ model:
         num_classes: null
     test_ds:
       file_names: 
-      - /mnt/data/SQuAD/squad_short_val.jsonl
+      - /mnt/code/data/SQuAD/squad_short_val.jsonl
       names: 
       - squad
       global_batch_size: 1
