@@ -1,0 +1,228 @@
+name: megatron_gpt_peft_${model.peft.peft_scheme}_tuning
+trainer:
+  devices: 1
+  accelerator: gpu
+  num_nodes: 1
+  precision: 16
+  logger: false
+  enable_checkpointing: true
+  use_distributed_sampler: false
+  max_epochs: 9999
+  max_steps: 20000
+  log_every_n_steps: 10
+  val_check_interval: 200
+  gradient_clip_val: 1.0
+exp_manager:
+  explicit_log_dir: null
+  exp_dir: null
+  name: ${name}
+  create_wandb_logger: false
+  wandb_logger_kwargs:
+    project: null
+    name: null
+  resume_if_exists: true
+  resume_ignore_no_checkpoint: true
+  create_checkpoint_callback: true
+  checkpoint_callback_params:
+    monitor: validation_${model.data.test_ds.metric.name}
+    save_top_k: 1
+    mode: max
+    save_nemo_on_train_end: true
+    filename: ${name}--{${exp_manager.checkpoint_callback_params.monitor}:.3f}-{step}-{consumed_samples}
+    model_parallel_size: ${model.tensor_model_parallel_size}
+    always_save_nemo: true
+    save_best_model: false
+model:
+  seed: 1234
+  tensor_model_parallel_size: 1
+  pipeline_model_parallel_size: 1
+  global_batch_size: 1
+  micro_batch_size: 1
+  restore_from_path: /domino/edv/dgx-models/Nemotron-3-8B-Base-4k.nemo
+  resume_from_checkpoint: null
+  save_nemo_on_validation_end: true
+  sync_batch_comm: false
+  megatron_amp_O2: false
+  sequence_parallel: false
+  activations_checkpoint_granularity: null
+  activations_checkpoint_method: null
+  activations_checkpoint_num_layers: null
+  activations_checkpoint_layers_per_pipeline: null
+  answer_only_loss: false
+  gradient_as_bucket_view: false
+  hidden_dropout: 0.0
+  attention_dropout: 0.0
+  ffn_dropout: 0.0
+  peft:
+    peft_scheme: adapter
+    restore_from_path: /domino/edv/dgx-models/Nemotron-3-8B-Base-4k.nemo
+    restore_from_ckpt_name: null
+    restore_from_hparams_path: null
+    adapter_tuning:
+      type: parallel_adapter
+      adapter_dim: 32
+      adapter_dropout: 0.0
+      norm_position: pre
+      column_init_method: xavier
+      row_init_method: zero
+      norm_type: mixedfusedlayernorm
+      layer_selection: null
+      weight_tying: false
+      position_embedding_strategy: null
+    lora_tuning:
+      adapter_dim: 32
+      adapter_dropout: 0.0
+      column_init_method: xavier
+      row_init_method: zero
+      layer_selection: null
+      weight_tying: false
+      position_embedding_strategy: null
+    p_tuning:
+      virtual_tokens: 10
+      bottleneck_dim: 1024
+      embedding_dim: 1024
+      init_std: 0.023
+    ia3_tuning:
+      layer_selection: null
+  data:
+    test_ds:
+      file_names:
+      - /mnt/data/SQuAD/squad_short_val.jsonl
+      names:
+      - squad
+      global_batch_size: 1
+      micro_batch_size: 1
+      shuffle: false
+      num_workers: 0
+      pin_memory: true
+      max_seq_length: 2048
+      min_seq_length: 1
+      drop_last: false
+      context_key: input
+      label_key: output
+      add_eos: true
+      add_sep: false
+      add_bos: false
+      write_predictions_to_file: true
+      output_file_path_prefix: /mnt/code/predictions
+      truncation_field: input
+      index_mapping_dir: null
+      prompt_template: '{input} {output}'
+      tokens_to_generate: 30
+      truncation_method: right
+      metric:
+        name: loss
+        average: null
+        num_classes: null
+  apply_rope_fusion: false
+inference:
+  greedy: true
+  top_k: 0
+  top_p: 0.9
+  temperature: 1.0
+  all_probs: false
+  repetition_penalty: 1.2
+  min_tokens_to_generate: 0
+  compute_logprob: false
+  outfile_path: output.txt
+  compute_attention_mask: true
+server: false
+port: 5555
+web_server: false
+share: true
+username: test
+password: test2
+web_port: 9889
+chat: false
+chatbot_config:
+  value: false
+  attributes:
+  - name: Quality
+    min: 0
+    max: 4
+    key: quality
+    type: int
+    default: 4
+  - name: Toxicity
+    min: 0
+    max: 4
+    key: toxcity
+    type: int
+    default: 0
+  - name: Humor
+    min: 0
+    max: 4
+    key: humor
+    type: int
+    default: 0
+  - name: Creativity
+    min: 0
+    max: 4
+    key: creativity
+    type: int
+    default: 0
+  - name: Violence
+    min: 0
+    max: 4
+    key: violence
+    type: int
+    default: 0
+  - name: Helpfulness
+    min: 0
+    max: 4
+    key: helpfulness
+    type: int
+    default: 4
+  - name: Not_Appropriate
+    min: 0
+    max: 4
+    key: not_appropriate
+    type: int
+    default: 0
+  - name: Language
+    choices:
+    - ar
+    - bg
+    - bn
+    - ca
+    - cs
+    - da
+    - de
+    - el
+    - en
+    - eo
+    - es
+    - eu
+    - fa
+    - fi
+    - fr
+    - gl
+    - he
+    - hu
+    - id
+    - it
+    - ja
+    - ko
+    - nb
+    - nl
+    - pl
+    - pt
+    - ro
+    - ru
+    - sk
+    - sv
+    - th
+    - tr
+    - uk
+    - vi
+    - zh
+    key: lang
+    type: list
+    default: en
+  user: User
+  assistant: Assistant
+  system: 'A chat between a curious human and an artificial intelligence assistant.
+    The assistant gives helpful, detailed, and polite answers to the human''s questions.
+
+
+    '
